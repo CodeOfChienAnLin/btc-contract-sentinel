@@ -5,8 +5,9 @@ const CONFIG = {
   SYMBOL: "BTCUSDT",
 
   // 更新間隔（毫秒）- 高頻刷新
+  // 更新間隔（毫秒）- 高頻刷新
   INTERVALS: {
-    PRICE: 2000, // 價格：2秒
+    PRICE: 1000, // 價格：1秒 (更即時)
     CHART: 3000, // 圖表：3秒
     FUNDING: 30000,
     OI: 10000, // 未平倉量：10秒
@@ -46,6 +47,7 @@ const state = {
   candleSeries: null,
   volumeSeries: null,
   currentTimeframe: "1h",
+  lastCandle: null, // 新增：保存最後一根 K 棒數據
 
   // 市場數據
   price: { current: 0, change: 0, changePercent: 0, high24h: 0, low24h: 0 },
@@ -299,6 +301,11 @@ async function updateChart() {
     close: k.close,
   }));
   state.candleSeries.setData(candleData);
+
+  // 保存最後一根 K 棒，供 updatePrice 即時更新使用
+  if (candleData.length > 0) {
+    state.lastCandle = { ...candleData[candleData.length - 1] };
+  }
 
   // 更新成交量 - 柔和配色
   const volumeData = klines.map((k) => ({
@@ -817,6 +824,20 @@ async function updatePrice() {
       low24h: ticker.lowPrice,
     };
     updatePriceUI();
+
+    // 即時更新 K 棒
+    if (state.lastCandle && state.candleSeries) {
+      const currentPrice = ticker.lastPrice;
+      const candle = state.lastCandle;
+
+      // 更新這根 K 棒的收盤價、最高價、最低價
+      candle.close = currentPrice;
+      if (currentPrice > candle.high) candle.high = currentPrice;
+      if (currentPrice < candle.low) candle.low = currentPrice;
+
+      // 更新到圖表
+      state.candleSeries.update(candle);
+    }
   }
 }
 
