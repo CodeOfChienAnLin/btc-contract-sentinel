@@ -4,13 +4,14 @@ const CONFIG = {
   BINANCE_BASE: "https://fapi.binance.com",
   SYMBOL: "BTCUSDT",
 
-  // 更新間隔（毫秒）
+  // 更新間隔（毫秒）- 高頻刷新
   INTERVALS: {
-    PRICE: 5000,
+    PRICE: 2000, // 價格：2秒
+    CHART: 3000, // 圖表：3秒
     FUNDING: 30000,
-    OI: 15000,
-    LONG_SHORT: 60000,
-    ORDER_FLOW: 3000,
+    OI: 10000, // 未平倉量：10秒
+    LONG_SHORT: 30000, // 多空比：30秒
+    ORDER_FLOW: 2000, // 大單流向：2秒
   },
 
   // 閾值設定
@@ -219,37 +220,37 @@ function initChart() {
 
   state.chart = LightweightCharts.createChart(container, {
     layout: {
-      background: { color: "#000000" },
-      textColor: "#00ff00",
+      background: { color: "#0a0a0f" },
+      textColor: "#4ade80",
       fontFamily: "'JetBrains Mono', monospace",
     },
     grid: {
-      vertLines: { color: "#1a1a1a" },
-      horzLines: { color: "#1a1a1a" },
+      vertLines: { color: "#1e1e2e" },
+      horzLines: { color: "#1e1e2e" },
     },
     crosshair: {
-      vertLine: { color: "#00ff00", width: 1, style: 2 },
-      horzLine: { color: "#00ff00", width: 1, style: 2 },
+      vertLine: { color: "#4ade80", width: 1, style: 2 },
+      horzLine: { color: "#4ade80", width: 1, style: 2 },
     },
     rightPriceScale: {
-      borderColor: "#1a1a1a",
+      borderColor: "#1e1e2e",
       scaleMargins: { top: 0.1, bottom: 0.2 },
     },
     timeScale: {
-      borderColor: "#1a1a1a",
+      borderColor: "#1e1e2e",
       timeVisible: true,
       secondsVisible: false,
     },
   });
 
-  // K 線系列
+  // K 線系列 - 柔和配色
   state.candleSeries = state.chart.addCandlestickSeries({
-    upColor: "#00ff00",
-    downColor: "#ff0000",
-    borderUpColor: "#00ff00",
-    borderDownColor: "#ff0000",
-    wickUpColor: "#00ff00",
-    wickDownColor: "#ff0000",
+    upColor: "#4ade80",
+    downColor: "#f87171",
+    borderUpColor: "#22c55e",
+    borderDownColor: "#ef4444",
+    wickUpColor: "#4ade80",
+    wickDownColor: "#f87171",
   });
 
   // 成交量系列
@@ -299,19 +300,22 @@ async function updateChart() {
   }));
   state.candleSeries.setData(candleData);
 
-  // 更新成交量
+  // 更新成交量 - 柔和配色
   const volumeData = klines.map((k) => ({
     time: k.time,
     value: k.volume,
-    color: k.close >= k.open ? "rgba(0, 255, 0, 0.3)" : "rgba(255, 0, 0, 0.3)",
+    color:
+      k.close >= k.open
+        ? "rgba(74, 222, 128, 0.35)"
+        : "rgba(248, 113, 113, 0.35)",
   }));
   state.volumeSeries.setData(volumeData);
 
-  // 添加價位線
+  // 添加價位線 - 柔和配色
   if (state.price.high24h > 0) {
     state.candleSeries.createPriceLine({
       price: state.price.high24h,
-      color: "#00ff00",
+      color: "#4ade80",
       lineWidth: 1,
       lineStyle: 2,
       axisLabelVisible: true,
@@ -322,7 +326,7 @@ async function updateChart() {
   if (state.price.low24h > 0) {
     state.candleSeries.createPriceLine({
       price: state.price.low24h,
-      color: "#ff0000",
+      color: "#f87171",
       lineWidth: 1,
       lineStyle: 2,
       axisLabelVisible: true,
@@ -601,25 +605,25 @@ function updateTacticalUI() {
   let sentiment, color;
   if (sentimentScore >= 50) {
     sentiment = "看多";
-    color = "#00ff00";
+    color = "#4ade80";
   } else if (sentimentScore >= 20) {
     sentiment = "偏多";
-    color = "rgba(0, 255, 0, 0.7)";
+    color = "rgba(74, 222, 128, 0.8)";
   } else if (sentimentScore <= -50) {
     sentiment = "看空";
-    color = "#ff0000";
+    color = "#f87171";
   } else if (sentimentScore <= -20) {
     sentiment = "偏空";
-    color = "rgba(255, 0, 0, 0.7)";
+    color = "rgba(248, 113, 113, 0.8)";
   } else {
     sentiment = "中性";
-    color = "#ffaa00";
+    color = "#fbbf24";
   }
 
   labelEl.textContent = sentiment;
   scoreEl.style.color = color;
-  gaugeRing.style.background = `conic-gradient(${color} ${(sentimentScore + 100) / 2}%, #111 0%)`;
-  gaugeRing.style.boxShadow = `0 0 20px ${color}`;
+  gaugeRing.style.background = `conic-gradient(${color} ${(sentimentScore + 100) / 2}%, #151520 0%)`;
+  gaugeRing.style.boxShadow = `0 0 15px ${color}`;
 
   // 操作建議
   const recSection = document.getElementById("recommendationSection");

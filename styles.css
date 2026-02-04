@@ -1,24 +1,27 @@
 /* ========== 基礎設定 ========== */
 :root {
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-tertiary: #111111;
-  --border-color: #1a1a1a;
-  --border-bright: #00ff00;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0f0f18;
+  --bg-tertiary: #151520;
+  --border-color: #1e1e2e;
+  --border-bright: #4ade80;
 
-  --text-primary: #00ff00;
-  --text-secondary: #00cc00;
-  --text-dim: #008800;
-  --text-muted: #404040;
+  /* 柔和質感綠色系 */
+  --text-primary: #4ade80;
+  --text-secondary: #22c55e;
+  --text-dim: #16a34a;
+  --text-muted: #525280;
 
-  --color-success: #00ff00;
-  --color-warning: #ffaa00;
-  --color-danger: #ff0000;
-  --color-info: #00ffff;
+  /* 柔和質感配色 */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #67e8f9;
 
-  --glow-primary: rgba(0, 255, 0, 0.5);
-  --glow-danger: rgba(255, 0, 0, 0.5);
-  --glow-warning: rgba(255, 170, 0, 0.5);
+  /* 柔和光暈效果 */
+  --glow-primary: rgba(74, 222, 128, 0.25);
+  --glow-danger: rgba(248, 113, 113, 0.25);
+  --glow-warning: rgba(251, 191, 36, 0.25);
 }
 
 * {
@@ -226,14 +229,14 @@ body {
 }
 
 .price-change.positive {
-  background: rgba(0, 255, 0, 0.15);
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.3);
   color: var(--color-success);
 }
 
 .price-change.negative {
-  background: rgba(255, 0, 0, 0.15);
-  border: 1px solid rgba(255, 0, 0, 0.3);
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
   color: var(--color-danger);
 }
 
@@ -305,7 +308,7 @@ body {
 
 .card:hover {
   border-color: var(--text-dim);
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.1);
 }
 
 .chart-card {
@@ -357,23 +360,23 @@ body {
 
 .status-badge.bullish,
 .status-badge.positive {
-  background: rgba(0, 255, 0, 0.15);
+  background: rgba(74, 222, 128, 0.12);
   color: var(--color-success);
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .status-badge.bearish,
 .status-badge.negative {
-  background: rgba(255, 0, 0, 0.15);
+  background: rgba(248, 113, 113, 0.12);
   color: var(--color-danger);
-  border: 1px solid rgba(255, 0, 0, 0.3);
+  border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 .status-badge.neutral,
 .status-badge.warning {
-  background: rgba(255, 170, 0, 0.15);
+  background: rgba(251, 191, 36, 0.12);
   color: var(--color-warning);
-  border: 1px solid rgba(255, 170, 0, 0.3);
+  border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .card-body {
@@ -576,7 +579,7 @@ body {
   background: linear-gradient(
     90deg,
     var(--color-success),
-    rgba(0, 255, 0, 0.3)
+    rgba(74, 222, 128, 0.3)
   );
 }
 
@@ -585,7 +588,7 @@ body {
   background: linear-gradient(
     270deg,
     var(--color-danger),
-    rgba(255, 0, 0, 0.3)
+    rgba(248, 113, 113, 0.3)
   );
 }
 
@@ -614,11 +617,11 @@ body {
 }
 
 .flow-stat.buy {
-  background: rgba(0, 255, 0, 0.1);
+  background: rgba(74, 222, 128, 0.1);
 }
 
 .flow-stat.sell {
-  background: rgba(255, 0, 0, 0.1);
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .flow-stat .label {
@@ -700,7 +703,7 @@ body {
 }
 
 .large-trades tr:hover td {
-  background: rgba(0, 255, 0, 0.05);
+  background: rgba(74, 222, 128, 0.05);
 }
 
 .large-trades .buy-row {
@@ -803,12 +806,12 @@ body {
 
 /* 操作建議 */
 .recommendation-section.long {
-  background: rgba(0, 255, 0, 0.1);
+  background: rgba(74, 222, 128, 0.1);
   border-color: var(--color-success);
 }
 
 .recommendation-section.short {
-  background: rgba(255, 0, 0, 0.1);
+  background: rgba(248, 113, 113, 0.1);
   border-color: var(--color-danger);
 }
 
@@ -873,7 +876,7 @@ body {
 }
 
 .level-item.current {
-  background: rgba(0, 255, 0, 0.05);
+  background: rgba(74, 222, 128, 0.05);
   margin: 0 -16px;
   padding: 8px 16px;
 }
@@ -963,18 +966,18 @@ body {
 }
 
 .signal-item.bullish {
-  background: rgba(0, 255, 0, 0.1);
-  border-color: rgba(0, 255, 0, 0.3);
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.3);
 }
 
 .signal-item.bearish {
-  background: rgba(255, 0, 0, 0.1);
-  border-color: rgba(255, 0, 0, 0.3);
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
 }
 
 .signal-item.warning {
   background: rgba(255, 170, 0, 0.1);
-  border-color: rgba(255, 170, 0, 0.3);
+  border-color: rgba(251, 191, 36, 0.3);
 }
 
 .signal-item.neutral {
@@ -1032,7 +1035,7 @@ body {
   margin-top: 16px;
   padding: 10px;
   background: rgba(255, 170, 0, 0.1);
-  border: 1px solid rgba(255, 170, 0, 0.3);
+  border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 6px;
   text-align: center;
   font-size: 0.75rem;
