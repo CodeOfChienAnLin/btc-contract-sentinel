@@ -6,21 +6,21 @@
   --border-color: #1e1e2e;
   --border-bright: #4ade80;
 
-  /* 柔和質感綠色系 */
-  --text-primary: #4ade80;
-  --text-secondary: #22c55e;
-  --text-dim: #16a34a;
+  /* 柔和質感配色 (台股/亞股風格：紅漲青跌) */
+  --text-primary: #f87171; /* 主色調改為紅色 */
+  --text-secondary: #ef4444;
+  --text-dim: #b91c1c;
   --text-muted: #525280;
 
-  /* 柔和質感配色 */
-  --color-success: #4ade80;
+  /* 顏色定義交換 */
+  --color-success: #f87171; /* 多頭/上漲 -> 紅色 */
   --color-warning: #fbbf24;
-  --color-danger: #f87171;
+  --color-danger: #2dd4bf; /* 空頭/下跌 -> 青色 */
   --color-info: #67e8f9;
 
   /* 柔和光暈效果 */
-  --glow-primary: rgba(74, 222, 128, 0.25);
-  --glow-danger: rgba(248, 113, 113, 0.25);
+  --glow-primary: rgba(45, 212, 191, 0.25); /* 紅光 */
+  --glow-danger: rgba(45, 212, 191, 0.25); /* 青光 */
   --glow-warning: rgba(251, 191, 36, 0.25);
 }
 
@@ -229,14 +229,14 @@ body {
 }
 
 .price-change.positive {
-  background: rgba(74, 222, 128, 0.12);
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
   color: var(--color-success);
 }
 
 .price-change.negative {
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.3);
   color: var(--color-danger);
 }
 
@@ -308,7 +308,7 @@ body {
 
 .card:hover {
   border-color: var(--text-dim);
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.1);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.1);
 }
 
 .chart-card {
@@ -360,16 +360,16 @@ body {
 
 .status-badge.bullish,
 .status-badge.positive {
-  background: rgba(74, 222, 128, 0.12);
+  background: rgba(248, 113, 113, 0.12);
   color: var(--color-success);
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 .status-badge.bearish,
 .status-badge.negative {
-  background: rgba(248, 113, 113, 0.12);
+  background: rgba(45, 212, 191, 0.12);
   color: var(--color-danger);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  border: 1px solid rgba(45, 212, 191, 0.3);
 }
 
 .status-badge.neutral,
@@ -579,7 +579,7 @@ body {
   background: linear-gradient(
     90deg,
     var(--color-success),
-    rgba(74, 222, 128, 0.3)
+    rgba(248, 113, 113, 0.3)
   );
 }
 
@@ -588,7 +588,7 @@ body {
   background: linear-gradient(
     270deg,
     var(--color-danger),
-    rgba(248, 113, 113, 0.3)
+    rgba(45, 212, 191, 0.3)
   );
 }
 
@@ -617,11 +617,11 @@ body {
 }
 
 .flow-stat.buy {
-  background: rgba(74, 222, 128, 0.1);
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .flow-stat.sell {
-  background: rgba(248, 113, 113, 0.1);
+  background: rgba(45, 212, 191, 0.1);
 }
 
 .flow-stat .label {
@@ -703,7 +703,7 @@ body {
 }
 
 .large-trades tr:hover td {
-  background: rgba(74, 222, 128, 0.05);
+  background: rgba(248, 113, 113, 0.05);
 }
 
 .large-trades .buy-row {
@@ -806,12 +806,12 @@ body {
 
 /* 操作建議 */
 .recommendation-section.long {
-  background: rgba(74, 222, 128, 0.1);
+  background: rgba(248, 113, 113, 0.1);
   border-color: var(--color-success);
 }
 
 .recommendation-section.short {
-  background: rgba(248, 113, 113, 0.1);
+  background: rgba(45, 212, 191, 0.1);
   border-color: var(--color-danger);
 }
 
@@ -876,7 +876,7 @@ body {
 }
 
 .level-item.current {
-  background: rgba(74, 222, 128, 0.05);
+  background: rgba(248, 113, 113, 0.05);
   margin: 0 -16px;
   padding: 8px 16px;
 }
@@ -966,13 +966,13 @@ body {
 }
 
 .signal-item.bullish {
-  background: rgba(74, 222, 128, 0.1);
-  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
 }
 
 .signal-item.bearish {
-  background: rgba(248, 113, 113, 0.1);
-  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
 }
 
 .signal-item.warning {
@@ -1152,7 +1152,7 @@ body {
 .tactical-hud.long {
   background: linear-gradient(
     90deg,
-    rgba(74, 222, 128, 0.1),
+    rgba(248, 113, 113, 0.1),
     rgba(0, 0, 0, 0.8)
   );
   border-bottom: 1px solid var(--color-success);
@@ -1168,7 +1168,7 @@ body {
 .tactical-hud.short {
   background: linear-gradient(
     90deg,
-    rgba(248, 113, 113, 0.1),
+    rgba(45, 212, 191, 0.1),
     rgba(0, 0, 0, 0.8)
   );
   border-bottom: 1px solid var(--color-danger);
@@ -1227,7 +1227,7 @@ body {
 .gauge-fill.buy {
   background: linear-gradient(
     90deg,
-    rgba(74, 222, 128, 0.2),
+    rgba(248, 113, 113, 0.2),
     var(--color-success)
   );
   box-shadow: 0 0 10px var(--glow-primary);
@@ -1236,7 +1236,7 @@ body {
 .gauge-fill.sell {
   background: linear-gradient(
     270deg,
-    rgba(248, 113, 113, 0.2),
+    rgba(45, 212, 191, 0.2),
     var(--color-danger)
   );
   box-shadow: 0 0 10px var(--glow-danger);

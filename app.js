@@ -279,7 +279,7 @@ function initChart() {
   state.chart = LightweightCharts.createChart(container, {
     layout: {
       background: { color: "#0a0a0f" },
-      textColor: "#4ade80",
+      textColor: "#f87171", // 主文字改為紅色
       fontFamily: "'JetBrains Mono', monospace",
     },
     grid: {
@@ -287,8 +287,8 @@ function initChart() {
       horzLines: { color: "#1e1e2e" },
     },
     crosshair: {
-      vertLine: { color: "#4ade80", width: 1, style: 2 },
-      horzLine: { color: "#4ade80", width: 1, style: 2 },
+      vertLine: { color: "#f87171", width: 1, style: 2 },
+      horzLine: { color: "#f87171", width: 1, style: 2 },
     },
     rightPriceScale: {
       borderColor: "#1e1e2e",
@@ -301,14 +301,14 @@ function initChart() {
     },
   });
 
-  // K 線系列 - 柔和配色
+  // K 線系列 - 台股配色 (紅漲青跌)
   state.candleSeries = state.chart.addCandlestickSeries({
-    upColor: "#4ade80",
-    downColor: "#f87171",
-    borderUpColor: "#22c55e",
-    borderDownColor: "#ef4444",
-    wickUpColor: "#4ade80",
-    wickDownColor: "#f87171",
+    upColor: "#f87171", // 紅色
+    downColor: "#2dd4bf", // 青色
+    borderUpColor: "#ef4444", // 深紅
+    borderDownColor: "#14b8a6", // 深青
+    wickUpColor: "#f87171",
+    wickDownColor: "#2dd4bf",
   });
 
   // 成交量系列
@@ -363,22 +363,22 @@ async function updateChart() {
     state.lastCandle = { ...candleData[candleData.length - 1] };
   }
 
-  // 更新成交量 - 柔和配色
+  // 更新成交量 - 台股配色
   const volumeData = klines.map((k) => ({
     time: k.time,
     value: k.volume,
     color:
       k.close >= k.open
-        ? "rgba(74, 222, 128, 0.35)"
-        : "rgba(248, 113, 113, 0.35)",
+        ? "rgba(248, 113, 113, 0.35)" // 紅色
+        : "rgba(45, 212, 191, 0.35)", // 青色
   }));
   state.volumeSeries.setData(volumeData);
 
-  // 添加價位線 - 柔和配色
+  // 添加價位線 - 台股配色
   if (state.price.high24h > 0) {
     state.candleSeries.createPriceLine({
       price: state.price.high24h,
-      color: "#4ade80",
+      color: "#f87171", // 紅色
       lineWidth: 1,
       lineStyle: 2,
       axisLabelVisible: true,
@@ -389,7 +389,7 @@ async function updateChart() {
   if (state.price.low24h > 0) {
     state.candleSeries.createPriceLine({
       price: state.price.low24h,
-      color: "#f87171",
+      color: "#2dd4bf", // 青色
       lineWidth: 1,
       lineStyle: 2,
       axisLabelVisible: true,
@@ -680,21 +680,24 @@ function updateTacticalUI() {
   const scoreEl = document.getElementById("sentimentScore");
   const labelEl = document.getElementById("sentimentLabel");
 
-  scoreEl.textContent = (sentimentScore > 0 ? "+" : "") + sentimentScore;
+  // 修復：使用 state.analysis.score 而不是 undefined 的 sentimentScore
+  const score = state.analysis.score; // 獲取正確分數
+
+  scoreEl.textContent = (score > 0 ? "+" : "") + score;
 
   let sentiment, color;
-  if (sentimentScore >= 50) {
+  if (score >= 50) {
     sentiment = "看多";
-    color = "#4ade80";
-  } else if (sentimentScore >= 20) {
+    color = "#f87171"; // 紅色
+  } else if (score >= 20) {
     sentiment = "偏多";
-    color = "rgba(74, 222, 128, 0.8)";
-  } else if (sentimentScore <= -50) {
-    sentiment = "看空";
-    color = "#f87171";
-  } else if (sentimentScore <= -20) {
-    sentiment = "偏空";
     color = "rgba(248, 113, 113, 0.8)";
+  } else if (score <= -50) {
+    sentiment = "看空";
+    color = "#2dd4bf"; // 青色
+  } else if (score <= -20) {
+    sentiment = "偏空";
+    color = "rgba(45, 212, 191, 0.8)";
   } else {
     sentiment = "中性";
     color = "#fbbf24";
@@ -702,7 +705,7 @@ function updateTacticalUI() {
 
   labelEl.textContent = sentiment;
   scoreEl.style.color = color;
-  gaugeRing.style.background = `conic-gradient(${color} ${(sentimentScore + 100) / 2}%, #151520 0%)`;
+  gaugeRing.style.background = `conic-gradient(${color} ${(score + 100) / 2}%, #151520 0%)`;
   gaugeRing.style.boxShadow = `0 0 15px ${color}`;
 
   // 操作建議
