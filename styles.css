@@ -1102,3 +1102,188 @@ body {
     font-size: 1.4rem;
   }
 }
+/* ========== 置頂戰術 HUD (Sticky Head-Up Display) ========== */
+.tactical-hud {
+  position: sticky;
+  top: 69px; /* Header height approx */
+  z-index: 99;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hud-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1400px;
+  position: relative;
+  z-index: 2;
+}
+
+.hud-signal {
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.hud-score {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.hud-score span {
+  font-weight: bold;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  margin-left: 6px;
+}
+
+/* HUD 狀態樣式 */
+.tactical-hud.long {
+  background: linear-gradient(
+    90deg,
+    rgba(74, 222, 128, 0.1),
+    rgba(0, 0, 0, 0.8)
+  );
+  border-bottom: 1px solid var(--color-success);
+}
+.tactical-hud.long .hud-signal {
+  color: var(--color-success);
+  text-shadow: 0 0 10px var(--glow-primary);
+}
+.tactical-hud.long .hud-score span {
+  color: var(--color-success);
+}
+
+.tactical-hud.short {
+  background: linear-gradient(
+    90deg,
+    rgba(248, 113, 113, 0.1),
+    rgba(0, 0, 0, 0.8)
+  );
+  border-bottom: 1px solid var(--color-danger);
+}
+.tactical-hud.short .hud-signal {
+  color: var(--color-danger);
+  text-shadow: 0 0 10px var(--glow-danger);
+}
+.tactical-hud.short .hud-score span {
+  color: var(--color-danger);
+}
+
+.tactical-hud.wait {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.tactical-hud.wait .hud-signal {
+  color: var(--text-muted);
+}
+
+/* ========== 大單流向視覺化 (Visualized Order Flow) ========== */
+.order-flow-visual {
+  margin-bottom: 20px;
+}
+
+.flow-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.flow-label.buy {
+  color: var(--color-success);
+}
+.flow-label.sell {
+  color: var(--color-danger);
+}
+
+.order-flow-gauge {
+  background: #111;
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.gauge-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.gauge-fill.buy {
+  background: linear-gradient(
+    90deg,
+    rgba(74, 222, 128, 0.2),
+    var(--color-success)
+  );
+  box-shadow: 0 0 10px var(--glow-primary);
+}
+
+.gauge-fill.sell {
+  background: linear-gradient(
+    270deg,
+    rgba(248, 113, 113, 0.2),
+    var(--color-danger)
+  );
+  box-shadow: 0 0 10px var(--glow-danger);
+  margin-left: auto; /* Push to right */
+}
+
+.gauge-center-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  opacity: 0.3;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.flow-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.flow-val.buy {
+  color: var(--color-success);
+  font-weight: bold;
+}
+.flow-val.sell {
+  color: var(--color-danger);
+  font-weight: bold;
+}
+.flow-val.mid {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ========== 費率熱圖警示色 ========== */
+.funding-heat-high {
+  color: #ff3333 !important; /* Bright Red */
+  text-shadow: 0 0 8px red;
+  font-weight: 800;
+}
+
+.funding-heat-low {
+  color: #33ff33 !important; /* Bright Green */
+  text-shadow: 0 0 8px lime;
+  font-weight: 800;
+}

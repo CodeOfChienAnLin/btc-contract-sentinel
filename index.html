@@ -65,6 +65,17 @@
       </div>
     </header>
 
+    <!-- 置頂戰術 HUD (Sticky Head-Up Display) -->
+    <div id="tacticalHud" class="tactical-hud wait">
+      <div class="hud-content">
+        <div class="hud-signal" id="hudSignal">⚪ 系統初始化中...</div>
+        <div class="hud-score">
+          戰術評分: <span id="hudScoreValue">--</span>
+        </div>
+      </div>
+      <div class="hud-glow"></div>
+    </div>
+
     <!-- 主要內容 -->
     <main class="dashboard">
       <!-- K 線圖 -->
@@ -208,7 +219,7 @@
         </div>
       </section>
 
-      <!-- 大單流向 -->
+      <!-- 大單流向 (視覺化量條版) -->
       <section class="card" id="orderFlowCard">
         <div class="card-header">
           <svg
@@ -220,27 +231,41 @@
           >
             <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
-          <span class="card-title">大單流向 (&gt;50 BTC)</span>
+          <span class="card-title">大單流向 (>50 BTC)</span>
           <span class="status-badge" id="orderFlowStatus">載入中</span>
         </div>
         <div class="card-body">
-          <div class="flow-stats">
-            <div class="flow-stat buy">
-              <span class="label">買入成交</span>
-              <span class="value" id="buyVolume">$--</span>
-              <span class="count" id="buyCount">-- 筆</span>
+          <!-- 視覺化多空力道條 -->
+          <div class="order-flow-visual">
+            <div class="flow-labels">
+              <span class="flow-label buy">買盤支撐</span>
+              <span class="flow-label sell">賣壓倒貨</span>
             </div>
-            <div class="flow-stat sell">
-              <span class="label">賣出成交</span>
-              <span class="value" id="sellVolume">$--</span>
-              <span class="count" id="sellCount">-- 筆</span>
+            <div class="order-flow-gauge">
+              <div
+                class="gauge-fill buy"
+                id="buyFlowBar"
+                style="width: 50%"
+              ></div>
+              <div
+                class="gauge-fill sell"
+                id="sellFlowBar"
+                style="width: 50%"
+              ></div>
+              <div class="gauge-center-line"></div>
+            </div>
+            <div class="flow-values">
+              <span class="flow-val buy" id="buyVolumeVal">--</span>
+              <span class="flow-val mid" id="flowDeltaVal">NET: --</span>
+              <span class="flow-val sell" id="sellVolumeVal">--</span>
             </div>
           </div>
-          <div class="delta-display">
-            <span class="label">淨流入</span>
-            <span class="value" id="flowDelta">$--</span>
-          </div>
-          <div class="large-trades" id="largeTradesList">
+
+          <div
+            class="large-trades"
+            id="largeTradesList"
+            style="margin-top: 15px"
+          >
             <table>
               <thead>
                 <tr>

@@ -61,15 +61,71 @@ const state = {
     sellCount: 0,
     delta: 0,
     largeTrades: [],
+    trend: "FLAT", // 價格趨勢: UP, DOWN, FLAT
   },
 
   // AI 分析
   analysis: {
-    sentimentScore: 0,
+    score: 50, // 初始分數
+    action: "WAIT", // LONG, SHORT, WAIT
+    signalText: "⚪ 系統初始化中...",
+    hudClass: "wait",
     signals: [],
-    recommendation: { action: "wait", confidence: 0, reason: "" },
+    divergence: null, // 背離訊號
   },
 };
+
+// ========== 核心戰術演算法 ==========
+/**
+ * 計算比特幣合約戰術評分
+ * @param {number} fundingRate - 資金費率 (e.g., 0.0001)
+ * @param {number} oiChange24h - 持倉量 24h 變化率 (%)
+ * @param {string} priceTrend - 當前價格趨勢 ('UP' | 'DOWN' | 'FLAT')
+ * @returns {object} { score, action, color, bg, text }
+ */
+function calculateTacticalSignal(fundingRate, oiChange24h, priceTrend) {
+  let score = 50; // 初始分數 (中立)
+
+  // --- 1. 資金費率邏輯 (反向指標) ---
+  // 費率過高 (>0.03%)，代表全市場都在做多，容易崩盤 -> 扣分
+  if (fundingRate > 0.0003) score -= 25;
+  // 費率為負 (<-0.01%)，代表全市場都在做空，容易軋空 -> 加分
+  if (fundingRate < -0.0001) score += 20;
+
+  // --- 2. 持倉量 (OI) 動能邏輯 ---
+  // OI 劇烈增加代表有大資金進場
+  if (Math.abs(oiChange24h) > 5) {
+    if (oiChange24h > 0 && priceTrend === "UP") {
+      score += 15; // 價漲量增 = 真多頭
+    } else if (oiChange24h > 0 && priceTrend === "DOWN") {
+      score -= 15; // 價跌量增 = 真空頭
+    } else if (oiChange24h < 0 && priceTrend === "UP") {
+      score -= 10; // 價漲量跌 = 誘多 (背離) -> 扣分
+    } else if (oiChange24h < 0 && priceTrend === "DOWN") {
+      score += 10; // 價跌量跌 = 誘空 (背離) -> 加分(止跌信號)
+    }
+  }
+
+  // --- 3. 輸出決策訊號 ---
+  let result = {
+    score: score,
+    action: "WAIT",
+    text: "⚪ 觀望吃瓜 (WAIT)",
+    hudClass: "wait",
+  };
+
+  if (score >= 75) {
+    result.action = "LONG";
+    result.text = "🟢 進場埋伏 (STRONG LONG)";
+    result.hudClass = "long";
+  } else if (score <= 25) {
+    result.action = "SHORT";
+    result.text = "🔴 高空轟炸 (STRONG SHORT)";
+    result.hudClass = "short";
+  }
+
+  return result;
+}
 
 // ========== 工具函數 ==========
 function formatNumber(num, decimals = 2) {
@@ -382,40 +438,33 @@ function updateFundingUI() {
   const { rate, markPrice, indexPrice, nextTime } = state.funding;
   const T = CONFIG.THRESHOLDS.FUNDING;
 
-  // 資金費率值
+  // 資金費率值 (熱圖邏輯)
   const rateEl = document.getElementById("fundingRate");
   rateEl.textContent = formatPercent(rate);
 
-  // 決定狀態和顏色
+  // 清除舊 class
+  rateEl.className = "metric-value";
+
+  // 熱圖警示色 logic
   let status, statusClass;
-  if (rate >= T.EXTREME_POSITIVE) {
-    status = "極度過熱";
-    statusClass = "bearish";
-    rateEl.className = "metric-value positive";
-  } else if (rate >= T.HIGH_POSITIVE) {
-    status = "過熱";
-    statusClass = "warning";
-    rateEl.className = "metric-value positive";
-  } else if (rate >= T.POSITIVE) {
-    status = "偏多";
-    statusClass = "bullish";
-    rateEl.className = "metric-value positive";
-  } else if (rate <= T.EXTREME_NEGATIVE) {
-    status = "極度恐慌";
-    statusClass = "bullish";
-    rateEl.className = "metric-value negative";
-  } else if (rate <= T.HIGH_NEGATIVE) {
-    status = "恐慌";
-    statusClass = "warning";
-    rateEl.className = "metric-value negative";
-  } else if (rate <= T.NEGATIVE) {
-    status = "偏空";
-    statusClass = "bearish";
-    rateEl.className = "metric-value negative";
+
+  if (rate >= 0.0003) {
+    // > 0.03%
+    status = "⚠️ 多頭過熱";
+    statusClass = "bearish"; // 警示做空
+    rateEl.classList.add("funding-heat-high"); // 亮紅色
+  } else if (rate <= -0.0001) {
+    // < -0.01%
+    status = "⚠️ 空頭擁擠";
+    statusClass = "bullish"; // 警示做多
+    rateEl.classList.add("funding-heat-low"); // 亮綠色
   } else {
-    status = "中性";
+    // 正常區間
+    status = "費率正常";
     statusClass = "neutral";
-    rateEl.className = "metric-value neutral";
+    rateEl.classList.add(
+      rate > 0 ? "positive" : rate < 0 ? "negative" : "neutral",
+    );
   }
 
   document.getElementById("fundingStatus").textContent = status;
@@ -551,25 +600,36 @@ function updateOrderFlowUI() {
   const { buyVolume, sellVolume, buyCount, sellCount, delta, largeTrades } =
     state.orderFlow;
 
-  document.getElementById("buyVolume").textContent =
+  // 1. 更新數值
+  document.getElementById("buyVolumeVal").textContent =
     "$" + formatNumber(buyVolume);
-  document.getElementById("sellVolume").textContent =
+  document.getElementById("sellVolumeVal").textContent =
     "$" + formatNumber(sellVolume);
-  document.getElementById("buyCount").textContent = buyCount + " 筆";
-  document.getElementById("sellCount").textContent = sellCount + " 筆";
+  document.getElementById("flowDeltaVal").textContent =
+    "NET: " + (delta > 0 ? "+" : "") + formatNumber(delta);
 
-  const deltaEl = document.getElementById("flowDelta");
-  deltaEl.textContent = (delta >= 0 ? "+" : "") + "$" + formatNumber(delta);
-  deltaEl.className = "value " + (delta >= 0 ? "positive" : "negative");
+  // 2. 更新視覺化量條 (Bar Gauge)
+  const totalVol = buyVolume + sellVolume || 1;
+  const buyPct = (buyVolume / totalVol) * 100;
+  const sellPct = (sellVolume / totalVol) * 100;
 
-  // 狀態
+  document.getElementById("buyFlowBar").style.width = buyPct + "%";
+  document.getElementById("sellFlowBar").style.width = sellPct + "%";
+
+  // 3. 狀態徽章
   let status, statusClass;
-  const absStrength = (Math.abs(delta) / (buyVolume + sellVolume || 1)) * 100;
+  const absStrength = (Math.abs(delta) / totalVol) * 100;
   if (absStrength > 20) {
     status = delta > 0 ? "買盤主導" : "賣盤主導";
     statusClass = delta > 0 ? "bullish" : "bearish";
+
+    // 逃命訊號: 1分鐘內出現極長紅條 (這裡簡化判斷賣盤佔比 > 70%)
+    if (sellPct > 70 && totalVol > 5000000) {
+      status = "🔴 逃命訊號";
+      statusClass = "bearish";
+    }
   } else {
-    status = "均衡";
+    status = "多空均衡";
     statusClass = "neutral";
   }
 
@@ -577,7 +637,7 @@ function updateOrderFlowUI() {
   document.getElementById("orderFlowStatus").className =
     "status-badge " + statusClass;
 
-  // 大單列表
+  // 4. 大單列表 (保持不變)
   const tbody = document.getElementById("tradesBody");
   if (largeTrades.length === 0) {
     tbody.innerHTML =
@@ -597,6 +657,19 @@ function updateOrderFlowUI() {
       )
       .join("");
   }
+}
+
+// 新增: 更新戰術 HUD
+function updateTacticalHUD() {
+  const { action, text, score, hudClass } = state.analysis;
+  const hudEl = document.getElementById("tacticalHud");
+
+  // 更新樣式類別
+  hudEl.className = `tactical-hud ${hudClass}`;
+
+  // 更新文字內容
+  document.getElementById("hudSignal").textContent = text;
+  document.getElementById("hudScoreValue").textContent = score;
 }
 
 function updateTacticalUI() {
@@ -681,134 +754,88 @@ function updateTacticalUI() {
 
 // ========== 分析邏輯 ==========
 function runAnalysis() {
-  const signals = [];
   const now = Date.now();
   const T = CONFIG.THRESHOLDS;
 
   const { rate } = state.funding;
   const { changePercent: oiChange } = state.oi;
   const { ratio: lsRatio } = state.longShort;
-  const { delta: flowDelta } = state.orderFlow;
-  const {
-    current: price,
-    low24h,
-    high24h,
-    changePercent: priceChange,
-  } = state.price;
+  const { delta: flowDelta, trend: priceTrend } = state.orderFlow;
 
-  // 條件1: 資金費率暴增 + OI 暴增
-  if (rate > T.FUNDING.HIGH_POSITIVE && oiChange > T.OI_CHANGE.SPIKE) {
+  // 1. 調用核心戰術演算法
+  const tacticalResult = calculateTacticalSignal(rate, oiChange, priceTrend);
+
+  // 2. 補充輔助信號 (保留部分原有邏輯)
+  const signals = [];
+
+  // 背離偵測
+  // 誘多: 價漲量縮 (或量跌) -> 這裡用持倉量下跌代表主力平倉
+  if (priceTrend === "UP" && oiChange < -2) {
     signals.push({
       type: "warning",
-      title: "⚠️ 多頭擁擠警告",
-      description: "資金費率與未平倉量同時激增，多頭過度擁擠，嚴防插針洗盤",
+      title: "⚠️ 誘多背離偵測",
+      description: "價格上漲但持倉量下降，主力可能正在平倉逃跑",
       timestamp: now,
       severity: 3,
     });
   }
+  // 誘空: 價跌量跌 -> 賣壓衰竭
+  if (priceTrend === "DOWN" && oiChange < -2) {
+    signals.push({
+      type: "bullish",
+      title: "🟢 誘空背離偵測",
+      description: "價格下跌且持倉量下降，賣壓可能衰竭",
+      timestamp: now,
+      severity: 2,
+    });
+  }
 
-  // 條件2: 大單持續賣出 + 價格接近低點
-  if (flowDelta < -1000000 && price < low24h * 1.01) {
+  // 資金費率異常
+  if (rate > 0.0003) {
     signals.push({
       type: "bearish",
-      title: "🔴 空頭集結",
-      description: "大單持續流出且價格接近24h低點，空頭力量強勢，建議保守",
+      title: "🔴 多頭極度擁擠",
+      description: "費率過高，慎防插針",
+      timestamp: now,
+      severity: 3,
+    });
+  } else if (rate < -0.0001) {
+    signals.push({
+      type: "bullish",
+      title: "🟢 軋空風險",
+      description: "費率負值，空頭擁擠",
+      timestamp: now,
+      severity: 2,
+    });
+  }
+
+  // 逃命訊號 (大單流向)
+  const totalVol = state.orderFlow.buyVolume + state.orderFlow.sellVolume || 1;
+  const sellPct = (state.orderFlow.sellVolume / totalVol) * 100;
+  if (sellPct > 70 && totalVol > 5000000) {
+    signals.push({
+      type: "bearish",
+      title: "🔴 主力倒貨警報",
+      description: "大單賣出佔比極高，建議避險",
       timestamp: now,
       severity: 3,
     });
   }
 
-  // 條件3: 負費率 + OI 增加
-  if (rate < T.FUNDING.HIGH_NEGATIVE && oiChange > T.OI_CHANGE.INCREASE) {
-    signals.push({
-      type: "bullish",
-      title: "🟢 軋空信號",
-      description: "負費率配合持倉增加，空頭積累中，可能出現軋空行情",
-      timestamp: now,
-      severity: 2,
-    });
-  }
-
-  // 條件4: 多空比極端偏多
-  if (lsRatio > T.LONG_SHORT.EXTREME_LONG) {
-    signals.push({
-      type: "warning",
-      title: "⚠️ 散戶過度樂觀",
-      description: `多空比達 ${lsRatio.toFixed(2)}，散戶做多情緒過熱，注意反向風險`,
-      timestamp: now,
-      severity: 2,
-    });
-  }
-
-  // 條件5: 多空比極端偏空
-  if (lsRatio < T.LONG_SHORT.EXTREME_SHORT) {
-    signals.push({
-      type: "bullish",
-      title: "🟢 逆向做多機會",
-      description: `多空比僅 ${lsRatio.toFixed(2)}，市場恐慌，可能存在超賣反彈機會`,
-      timestamp: now,
-      severity: 2,
-    });
-  }
-
-  // 條件6: 突破24h高點
-  if (price > high24h && flowDelta > 500000) {
-    signals.push({
-      type: "bullish",
-      title: "🚀 突破創高",
-      description: "價格突破24h高點且有大單買入支撐，關注回踩確認",
-      timestamp: now,
-      severity: 2,
-    });
-  }
-
-  // 計算情緒分數
-  let score = 0;
-  score += Math.max(Math.min(rate * 100 * 30, 30), -30);
-  score += Math.max(Math.min(oiChange * 2, 20), -20);
-  score += Math.max(Math.min((lsRatio - 1) * 20, 20), -20);
-  score += Math.max(Math.min((flowDelta / 10000000) * 15, 15), -15);
-  score += Math.max(Math.min(priceChange * 3, 15), -15);
-  score = Math.max(Math.min(Math.round(score), 100), -100);
-
-  // 生成建議
-  const hasHighWarning = signals.some(
-    (s) => s.severity === 3 && s.type === "warning",
-  );
-  let recommendation;
-
-  if (hasHighWarning) {
-    recommendation = {
-      action: "wait",
-      confidence: 80,
-      reason: "市場存在高風險信號，建議暫時觀望等待明確方向",
-    };
-  } else if (score >= 50) {
-    recommendation = {
-      action: "long",
-      confidence: Math.min(50 + score / 2, 90),
-      reason: "市場情緒積極，技術指標偏多，可考慮做多",
-    };
-  } else if (score <= -50) {
-    recommendation = {
-      action: "short",
-      confidence: Math.min(50 - score / 2, 90),
-      reason: "市場情緒消極，技術指標偏空，可考慮做空",
-    };
-  } else {
-    recommendation = {
-      action: "wait",
-      confidence: 60,
-      reason: "市場方向不明確，建議等待更清晰的信號",
-    };
-  }
-
+  // 3. 更新 State
   state.analysis = {
-    sentimentScore: score,
+    ...tacticalResult, // score, action, text, hudClass
     signals: signals.sort((a, b) => b.severity - a.severity),
-    recommendation,
+    // 兼容舊版 UI 的推薦物件
+    recommendation: {
+      action: tacticalResult.action.toLowerCase(),
+      confidence: tacticalResult.score,
+      reason: tacticalResult.text,
+    },
   };
 
+  // 4. 更新 UI
+  updateTacticalHUD();
   updateTacticalUI();
 }
 
@@ -837,6 +864,12 @@ async function updatePrice() {
 
       // 更新到圖表
       state.candleSeries.update(candle);
+
+      // 計算日內趨勢
+      if (currentPrice > candle.open * 1.001) state.orderFlow.trend = "UP";
+      else if (currentPrice < candle.open * 0.999)
+        state.orderFlow.trend = "DOWN";
+      else state.orderFlow.trend = "FLAT";
     }
   }
 }
