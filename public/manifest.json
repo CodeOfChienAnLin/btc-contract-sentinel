@@ -1,0 +1,27 @@
+{
+  "name": "BTC Contract Sentinel",
+  "short_name": "BTC Sentinel",
+  "description": "比特幣永續合約戰術儀表板 - 即時監控資金費率、未平倉量、多空比及AI戰術建議",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "zh-TW",
+  "dir": "ltr"
+}

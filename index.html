@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="比特幣永續合約戰術儀表板 - 即時監控資金費率、未平倉量、多空比及AI戰術建議"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>BTC Contract Sentinel | 比特幣合約戰術儀表板</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 掃描線效果 -->
+    <div class="scan-line"></div>
+
+    <!-- 頁首 -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo">
+            <span class="logo-icon">₿</span>
+            <div class="logo-pulse"></div>
+          </div>
+          <div class="logo-text">
+            <h1>BTC SENTINEL</h1>
+            <p>永續合約戰術儀表板</p>
+          </div>
+        </div>
+
+        <div class="price-section">
+          <div class="price-info">
+            <span class="price-label">BTC/USDT</span>
+            <span class="price-value" id="currentPrice">$--,---</span>
+          </div>
+          <div class="price-change" id="priceChange">
+            <span class="change-percent">--%</span>
+            <span class="change-value">$--</span>
+          </div>
+        </div>
+
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span>即時數據</span>
+          <span class="cursor"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要內容 -->
+    <main class="dashboard">
+      <!-- K 線圖 -->
+      <section class="card chart-card">
+        <div class="card-header">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+            />
+          </svg>
+          <span class="card-title">BTC/USDT 永續合約走勢</span>
+          <div class="timeframe-selector">
+            <button class="tf-btn" data-tf="1m">1分</button>
+            <button class="tf-btn active" data-tf="1h">1時</button>
+            <button class="tf-btn" data-tf="4h">4時</button>
+            <button class="tf-btn" data-tf="1d">1日</button>
+          </div>
+        </div>
+        <div id="priceChart"></div>
+      </section>
+
+      <!-- 資金費率 -->
+      <section class="card" id="fundingCard">
+        <div class="card-header">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="card-title">資金費率</span>
+          <span class="status-badge" id="fundingStatus">載入中</span>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-value" id="fundingRate">--.----%</span>
+            <div class="metric-sub">
+              <span class="label">下次結算</span>
+              <span class="value" id="fundingCountdown">--:--:--</span>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">標記價格</span>
+              <span class="value" id="markPrice">$--,---</span>
+            </div>
+            <div class="info-item">
+              <span class="label">指數價格</span>
+              <span class="value" id="indexPrice">$--,---</span>
+            </div>
+          </div>
+          <p class="analysis-text" id="fundingAnalysis">等待數據...</p>
+        </div>
+      </section>
+
+      <!-- 未平倉量 -->
+      <section class="card" id="oiCard">
+        <div class="card-header">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+          <span class="card-title">未平倉量 (OI)</span>
+          <span class="status-badge" id="oiStatus">載入中</span>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-value" id="openInterest">-- BTC</span>
+          </div>
+          <div class="change-indicator">
+            <span class="label">變化率</span>
+            <span class="value" id="oiChange">--%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="oiProgress"></div>
+          </div>
+          <p class="analysis-text" id="oiAnalysis">等待數據...</p>
+        </div>
+      </section>
+
+      <!-- 多空比率 -->
+      <section class="card" id="lsCard">
+        <div class="card-header">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          <span class="card-title">多空比率</span>
+          <span class="status-badge" id="lsStatus">載入中</span>
+        </div>
+        <div class="card-body">
+          <div class="ls-display">
+            <div class="ls-side long">
+              <span class="ls-percent" id="longPercent">--%</span>
+              <span class="ls-label">多頭</span>
+            </div>
+            <div class="ls-ratio">
+              <span id="lsRatio">--</span>
+              <span class="ls-label">比率</span>
+            </div>
+            <div class="ls-side short">
+              <span class="ls-percent" id="shortPercent">--%</span>
+              <span class="ls-label">空頭</span>
+            </div>
+          </div>
+          <div class="ls-bar">
+            <div class="ls-bar-long" id="lsBarLong"></div>
+            <div class="ls-bar-short" id="lsBarShort"></div>
+            <div class="ls-bar-center"></div>
+          </div>
+          <div class="info-item" style="margin-top: 12px">
+            <span class="label">大戶多空比</span>
+            <span class="value" id="topTraderRatio">--</span>
+          </div>
+          <p class="analysis-text" id="lsAnalysis">等待數據...</p>
+        </div>
+      </section>
+
+      <!-- 大單流向 -->
+      <section class="card" id="orderFlowCard">
+        <div class="card-header">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <span class="card-title">大單流向 (&gt;50 BTC)</span>
+          <span class="status-badge" id="orderFlowStatus">載入中</span>
+        </div>
+        <div class="card-body">
+          <div class="flow-stats">
+            <div class="flow-stat buy">
+              <span class="label">買入成交</span>
+              <span class="value" id="buyVolume">$--</span>
+              <span class="count" id="buyCount">-- 筆</span>
+            </div>
+            <div class="flow-stat sell">
+              <span class="label">賣出成交</span>
+              <span class="value" id="sellVolume">$--</span>
+              <span class="count" id="sellCount">-- 筆</span>
+            </div>
+          </div>
+          <div class="delta-display">
+            <span class="label">淨流入</span>
+            <span class="value" id="flowDelta">$--</span>
+          </div>
+          <div class="large-trades" id="largeTradesList">
+            <table>
+              <thead>
+                <tr>
+                  <th>時間</th>
+                  <th>方向</th>
+                  <th>數量</th>
+                  <th>價格</th>
+                </tr>
+              </thead>
+              <tbody id="tradesBody">
+                <tr>
+                  <td colspan="4" class="no-data">暫無大單成交</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI 戰術建議 -->
+      <section class="card tactical-card" id="tacticalCard">
+        <div class="card-header">
+          <svg
+            class="icon pulse"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+            />
+          </svg>
+          <span class="card-title glow">AI 戰術建議中心</span>
+        </div>
+        <div class="card-body">
+          <div class="tactical-grid">
+            <!-- 市場情緒 -->
+            <div class="tactical-section sentiment-section">
+              <h3>市場情緒指數</h3>
+              <div class="sentiment-gauge">
+                <div class="gauge-ring" id="sentimentRing">
+                  <div class="gauge-center">
+                    <span class="gauge-value" id="sentimentScore">0</span>
+                    <span class="gauge-label" id="sentimentLabel">中性</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sentiment-scale">
+                <span class="scale-label negative">-100 恐慌</span>
+                <span class="scale-divider">|</span>
+                <span class="scale-label neutral">0 中性</span>
+                <span class="scale-divider">|</span>
+                <span class="scale-label positive">+100 貪婪</span>
+              </div>
+            </div>
+
+            <!-- 操作建議 -->
+            <div
+              class="tactical-section recommendation-section"
+              id="recommendationSection"
+            >
+              <h3>操作建議</h3>
+              <div class="recommendation-display">
+                <span class="rec-icon" id="recIcon">⏸️</span>
+                <div class="rec-info">
+                  <span class="rec-action" id="recAction">觀望</span>
+                  <span class="rec-confidence"
+                    >信心度: <span id="recConfidence">0</span>%</span
+                  >
+                </div>
+              </div>
+              <p class="rec-reason" id="recReason">等待數據載入...</p>
+            </div>
+
+            <!-- 關鍵價位 -->
+            <div class="tactical-section levels-section">
+              <h3>關鍵價位</h3>
+              <div class="levels-list">
+                <div class="level-item">
+                  <span class="level-label">24H 高點</span>
+                  <span class="level-value positive" id="high24h">$--,---</span>
+                </div>
+                <div class="level-item current">
+                  <span class="level-label">當前價格</span>
+                  <span class="level-value" id="currentPriceLevel"
+                    >$--,---</span
+                  >
+                </div>
+                <div class="level-item">
+                  <span class="level-label">24H 低點</span>
+                  <span class="level-value negative" id="low24h">$--,---</span>
+                </div>
+              </div>
+              <div class="price-position">
+                <div class="position-bar">
+                  <div class="position-fill" id="pricePositionFill"></div>
+                  <div class="position-dot" id="pricePositionDot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 戰術信號 -->
+          <div class="signals-section">
+            <h3>即時戰術信號</h3>
+            <div class="signals-list" id="signalsList">
+              <div class="signal-item neutral">
+                <div class="signal-content">
+                  <span class="signal-title">📊 等待數據</span>
+                  <span class="signal-badge low">低</span>
+                </div>
+                <p class="signal-desc">正在連接市場數據...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 免責聲明 -->
+          <div class="disclaimer">
+            ⚠️ 本系統僅供參考，不構成投資建議。投資有風險，請謹慎決策。
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+      <p>BTC Contract Sentinel v1.0 | 數據來源: Binance Futures API</p>
+      <p>即時更新 • 資金費率 30s • 未平倉量 15s • 大單 3s</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
