@@ -73,6 +73,13 @@ const state = {
     signals: [],
     divergence: null, // 背離訊號
   },
+
+  // 警報系統
+  alert: {
+    lastAlertTime: 0,
+    cooldown: 5 * 60 * 1000, // 5分鐘冷卻
+    enabled: false, // 是否啟用通知
+  },
 };
 
 // ========== 核心戰術演算法 ==========
@@ -840,6 +847,85 @@ function runAnalysis() {
   // 4. 更新 UI
   updateTacticalHUD();
   updateTacticalUI();
+
+  // 5. 檢查警報
+  checkAndSendAlert();
+}
+
+// ========== 警報系統 ==========
+function checkAndSendAlert() {
+  if (!state.alert.enabled) return;
+
+  const now = Date.now();
+  if (now - state.alert.lastAlertTime < state.alert.cooldown) return;
+
+  const { score, action, text } = state.analysis;
+  let title = "";
+  let body = "";
+  let shouldAlert = false;
+
+  // 條件1: 強力多空訊號 (Score >= 80 或 <= 20)
+  if (score >= 80) {
+    title = "🚨 強力做多信號 (Strong Long)";
+    body = `戰術評分達 ${score}！多頭氣勢強勁，建議關注進場機會。`;
+    shouldAlert = true;
+  } else if (score <= 20) {
+    title = "🚨 強力做空信號 (Strong Short)";
+    body = `戰術評分剩 ${score}！空頭主導市場，建議關注做空機會。`;
+    shouldAlert = true;
+  }
+
+  // 條件2: 逃命訊號 (Order Flow)
+  // 簡單檢查是否有 active 的紅色狀態
+  const statusBadge = document.getElementById("orderFlowStatus");
+  if (statusBadge && statusBadge.textContent.includes("逃命")) {
+    title = "🔴 逃命警報！";
+    body = "大單流向出現極端賣壓，請注意風險！";
+    shouldAlert = true;
+  }
+
+  if (shouldAlert) {
+    sendNotification(title, body);
+    state.alert.lastAlertTime = now;
+  }
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "https://cryptologos.cc/logos/bitcoin-btc-logo.png", // 簡單引用
+      tag: "btc-sentinel-alert",
+    });
+  }
+}
+
+function initNotification() {
+  const btn = document.getElementById("notifyBtn");
+
+  // 檢查當前權限
+  if (Notification.permission === "granted") {
+    state.alert.enabled = true;
+    btn.classList.add("active");
+  }
+
+  btn.addEventListener("click", () => {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          state.alert.enabled = true;
+          btn.classList.add("active");
+          new Notification("戰術警報已啟用", {
+            body: "當出現強力信號時將通知您。",
+          });
+        }
+      });
+    } else {
+      // 切換開關
+      state.alert.enabled = !state.alert.enabled;
+      btn.classList.toggle("active", state.alert.enabled);
+    }
+  });
 }
 
 // ========== 數據更新函數 ==========
@@ -975,6 +1061,9 @@ async function init() {
 
   // 首次分析
   runAnalysis();
+
+  // 初始化警報按鈕
+  initNotification();
 
   // 設定定時更新
   setInterval(updatePrice, CONFIG.INTERVALS.PRICE);

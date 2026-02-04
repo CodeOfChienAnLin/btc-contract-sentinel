@@ -297,6 +297,123 @@ body {
   }
 }
 
+/* ========== 響應式設計優化 ========== */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 10px;
+    height: auto; /* 允許高度自適應 */
+    min-height: 60px;
+    flex-wrap: wrap; /* 允許換行 */
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .logo-section {
+    flex: 1 0 auto; /* Logo 佔據必要空間 */
+  }
+
+  /* 強制顯示通知按鈕 */
+  .status-indicator {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .logo-text h1 {
+    font-size: 1rem; /* 縮小標題 */
+  }
+
+  .logo-text p {
+    display: none; /* 手機版隱藏副標題以省空間 */
+  }
+
+  /* .tactical-hud {
+    top: 56px;
+    padding: 8px 12px;
+  }
+  */
+
+  /* 卡片標題適配 */
+  .card-header {
+    flex-wrap: wrap; /* 允許換行 */
+    gap: 10px;
+    padding: 12px;
+    align-items: center;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    flex: 1 0 100%; /* 標題佔滿一行 */
+    margin-bottom: 4px;
+  }
+
+  /* 核心修復：時區選擇器橫向捲動 */
+  .timeframe-selector {
+    display: flex !important; /* 強制顯示 */
+    width: 100%;
+    overflow-x: auto; /* 超出寬度時顯示捲軸 */
+    white-space: nowrap; /* 禁止按鈕換行 */
+    padding-bottom: 4px; /* 預留捲軸空間 */
+    justify-content: flex-start; /* 靠左對齊 */
+
+    /* 隱藏捲軸但保留功能 (Chrome/Safari) */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .timeframe-selector::-webkit-scrollbar {
+    height: 0px; /* 隱藏捲軸 */
+    background: transparent;
+  }
+
+  .tf-btn {
+    padding: 6px 14px; /* 加大按鈕便於點擊 */
+    font-size: 0.85rem;
+    flex-shrink: 0; /* 防止按鈕被壓縮 */
+    margin-right: 4px;
+  }
+
+  /* 隱藏不重要資訊 */
+  .metric-sub,
+  .logo-pulse {
+    display: none;
+  }
+
+  /* 價格區域稍微縮小 */
+  .price-info .price-value {
+    font-size: 1rem;
+  }
+}
+
+/* 通知按鈕樣式 */
+.notification-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 10px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex; /* 確保垂直置中 */
+}
+
+/* 確保 SVG 有大小 */
+.notification-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.notification-btn.active {
+  color: var(--color-warning);
+  text-shadow: 0 0 10px var(--glow-warning);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.notification-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
 /* ========== 卡片 ========== */
 .card {
   background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
